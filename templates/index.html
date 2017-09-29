@@ -1,0 +1,40 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>MMO Asteroidz</title>
+		<script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
+		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+		<script type="text/javascript" charset="utf-8">
+		$(document).ready(function() {
+			namespace = '/test';
+			var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+			socket.on('connect', function() {
+				socket.emit('join', {data: 'I\'m connected!'} );
+			});
+
+			socket.on('joined', function(data){
+				console.log(data);
+				
+				var canvas = document.getElementById('gamespace');
+				if (canvas.getContext) {
+					var ctx = canvas.getContext('2d');
+					ctx.beginPath();
+					ctx.moveTo(data.x, data.y);
+					ctx.lineTo(data.x+20, data.y+20);
+					ctx.lineTo(data.x, data.y+40);
+					ctx.fill();
+				}	
+				    
+			});
+		});
+		</script>
+		<style>
+		#gamespace {
+			border: 1px solid #e0e0e0;
+		}
+		</style>
+	</head>
+	<body>
+		<canvas id="gamespace" width="700" height="600"></canvas>
+	</body>
+</html>
