@@ -13,6 +13,7 @@
 			});
 
 			socket.on('joined', function(data){
+				console.log(data);
 				var sockid_prefix = socket.nsp + "#";
 				var identifier = socket["id"].replace("", sockid_prefix);
 				var canvas = document.getElementById('gamespace');
