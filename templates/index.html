@@ -13,19 +13,22 @@
 			});
 
 			socket.on('joined', function(data){
-				console.log(data);
-				
+				var sockid_prefix = socket.nsp + "#";
+				var identifier = socket["id"].replace("", sockid_prefix);
 				var canvas = document.getElementById('gamespace');
-				if (canvas.getContext) {
-					var ctx = canvas.getContext('2d');
-					ctx.beginPath();
-					ctx.moveTo(data.x, data.y);
-					ctx.lineTo(data.x+20, data.y+20);
-					ctx.lineTo(data.x, data.y+40);
-					ctx.fill();
-				}	
-				    
+				for (var user in data){
+					if (canvas.getContext) {
+						var ctx = canvas.getContext('2d');
+						ctx.beginPath();
+						ctx.moveTo(data[user].x, data[user].y);
+						ctx.lineTo(data[user].x+20, data[user].y+20);
+						ctx.lineTo(data[user].x, data[user].y+40);
+						ctx.fillStyle = "#"+data[user].colour;
+						ctx.fill();
+					}
+				}
 			});
+
 		});
 		</script>
 		<style>
