@@ -36,8 +36,6 @@
 				}
 			});
 
-
-
 		});
 		function draw(data, socket){
 			var sockid_prefix = socket.nsp + "#";
@@ -49,17 +47,15 @@
 				for (var user in data){
 					ctx.beginPath();
 					ctx.moveTo(data[user].x, data[user].y);
-					ctx.lineTo(data[user].x+20, data[user].y+20);
-					ctx.lineTo(data[user].x, data[user].y+40);
+					ctx.lineTo(data[user].x+15, data[user].y+30);
+					ctx.lineTo(data[user].x-15, data[user].y+30);
 					ctx.lineTo(data[user].x, data[user].y);
 					ctx.fillStyle = "#"+data[user].colour;
 					ctx.strokeStyle = "#"+data[user].colour;
+					ctx.stroke();
 					if (user == identifier){
-						ctx.stroke();
-					} else {
 						ctx.fill();
-					
-					}
+					} 
 				}
 			}
 		
