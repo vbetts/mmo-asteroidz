@@ -4,6 +4,7 @@ from threading import Lock
 from random import randint
 from classes.Player import Player
 from classes.Spaceship import Spaceship
+from classes.Gamespace import Gamespace
 
 app = Flask(__name__)
 app.debug = True
@@ -14,42 +15,11 @@ thread_lock = Lock()
 all_players = {}
 all_ships = {}
 
+game_data = Gamespace()
+
 @app.route('/')
 def index():
         return render_template('index.html')
-
-
-@socketio.on('join', namespace='/test')
-def join_event(joinmsg):
-    global all_players
-    global all_ships
-    user = Player(request.sid)
-    ship = Spaceship()
-    user.shipid = ship.shipid
-
-    #store arrays of ship and player objects in memory indexed by respective IDs
-    all_ships[ship.shipid]=ship
-    all_players[user.playerid]=user
-
-    #Python objects are not translatable to JSON
-    #Build a JSON object containing ship data to return to the client
-    players_json = build_json()
-    init_game()
-    emit('draw', players_json)
-
-#move_ship is triggered when the user presses an arrow key
-#This function sets the direction of movement
-@socketio.on('move_ship', namespace='/test')
-def move_event(direction):
-    global all_players
-    global all_ships
-    player = all_players[request.sid]
-    ship = all_ships[player.shipid]
-    ship.set_direction(direction)
-    
-    game_data = build_json()
-
-    emit('draw', game_data)
 
 
 #Start the background thread to 'animate' the game objects
@@ -59,36 +29,79 @@ def init_game():
             if thread is None:
                 thread = socketio.start_background_task(target=update_game)
 
+@socketio.on('join', namespace='/test')
+def join_event(joinmsg):
+    global game_data
+    game_data.new_player(request.sid)
+ 
+ #Python objects are not translatable to JSON
+    #Build a JSON object containing ship data to return to the client
+    players_json = build_json()
+    init_game()
+    emit('draw', players_json)
+
+#move_ship is triggered when the user presses an arrow key
+#This function sets the direction of movement
+@socketio.on('move_ship', namespace='/test')
+def move_event(direction):
+    global game_data
+    player = game_data.players[request.sid]
+    ship = game_data.spaceships[player.shipid]
+
+    ship.set_direction(direction)
+    
+    ret = build_json()
+
+    emit('draw', ret)
+
+
+@socketio.on('fire', namespace='/test')
+def fire_missile():
+    global game_data
+    missile = game_data.new_projectile(request.sid)
+    ret = build_json()
+    emit('draw', ret)
+
 #Re-draw the canvas 30x a second
 def update_game():
-    global all_ships
+    global game_data
     while True:
         socketio.sleep(1.0/30.0)
-        for ship in all_ships:
-            all_ships[ship].move()
-        game_data = build_json()
-        socketio.emit('draw', game_data, namespace='/test')
+        game_data.update()
+        ret = build_json()
+        socketio.emit('draw', ret, namespace='/test')
 
 #Builds data in format that the client side can understand
 def build_json():
-    global all_players
-    global all_ships
+    global game_data
     #Python dictionaries are essentially the same format as JSON
     ret = {}
-    for player in all_players:
-        ship = all_ships[all_players[player].shipid]
+    ret["players"] = {}
+    ret["projectiles"] = []
+    ret["asteroids"] = []
+
+    for projectile in game_data.projectiles:
+        projectile_json = {'x':projectile.x, 'y':projectile.y, 'rot':projectile.rotation}
+        ret["projectiles"].append(projectile_json)
+
+    for player in game_data.players:
+        ship = game_data.spaceships[game_data.players[player].shipid]
         #index the data by playerid
-        ret[player] = {'shipid':ship.shipid, 'colour':ship.colour, 'x':ship.x, 'y':ship.y, 'rot':ship.rotation}
+        ret["players"][player] = {'shipid':ship.shipid, 'colour':ship.colour, 'x':ship.x, 'y':ship.y, 'rot':ship.rotation}
+    
     return ret
 
 @socketio.on('disconnect', namespace='/test')
 def leave_event():
-    global all_players
-    global all_ships
+    global game_data
     #Remove players who have disconnected from the stored game data
-    player = all_players[request.sid]
-    del all_players[request.sid]
-    del all_ships[player.shipid]
+    player = game_data.players[request.sid]
+    del game_data.players[request.sid]
+    del game_data.spaceships[player.shipid]
+
+    for projectile in game_data.projectiles:
+        if projectile.shipid == player.shipid:
+           game_data.projectiles.remove(projectile) 
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0')

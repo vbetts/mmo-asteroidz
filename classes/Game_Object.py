@@ -1,6 +1,5 @@
 import random, math
 
-#OPPOSITE_DIRECTION = {"left":"right", "right":"left", "up":"down", "down":"up"}
 MAX_HEIGHT = 600
 MAX_WIDTH = 700
 MAX_VELOCITY = 5

@@ -13,6 +13,7 @@
 			});
 
 			socket.on('draw', function(data){
+				console.log(data)
 				draw(data, socket);
 			});
 			
@@ -45,19 +46,33 @@
 			if (canvas.getContext) {
 				var ctx = canvas.getContext('2d');
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
-				for (var user in data){
+				for (var user in data.players){
 					if (user == identifier){
 						current_user = true;
 					} else {
 						current_user = false;
 					}
 
-					draw_ship(data[user], ctx, current_user);
+					draw_ship(data.players[user], ctx, current_user);
 				}
+
+				draw_projectiles(data.projectiles, ctx);
 			}
 		
 		}
 
+		function draw_projectiles(projectiles, ctx){
+			for (var i = 0; i < projectiles.length; i++){
+				p = projectiles[i];
+				ctx.beginPath();
+				ctx.moveTo(p.x, p.y);
+				ctx.lineTo(p.x-3, p.y+3);
+				ctx.strokeStyle="#000000";
+				ctx.stroke();	
+			}	
+		
+		}
+		
 		function draw_ship(ship_data, ctx, current_user){
 			var spaceship_length = 15;
 			var x = ship_data.x;
