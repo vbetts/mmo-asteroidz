@@ -84,6 +84,10 @@ def build_json():
         projectile_json = {'x':projectile.x, 'y':projectile.y, 'rot':projectile.rotation}
         ret["projectiles"].append(projectile_json)
 
+    for a in game_data.asteroids:
+        asteroid_json = {'x':a.x, 'y':a.y, 'radius':a.radius, 'spin':a.spin, 'points':a.points}
+        ret["asteroids"].append(asteroid_json)
+
     for player in game_data.players:
         ship = game_data.spaceships[game_data.players[player].shipid]
         #index the data by playerid
@@ -99,9 +103,6 @@ def leave_event():
     del game_data.players[request.sid]
     del game_data.spaceships[player.shipid]
 
-    for projectile in game_data.projectiles:
-        if projectile.shipid == player.shipid:
-           game_data.projectiles.remove(projectile) 
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0')

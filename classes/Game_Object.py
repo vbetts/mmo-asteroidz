@@ -12,6 +12,7 @@ class Game_Object:
         self.rotation = random.randint(0, 359)
         self.x = random.randint(0, 600)
         self.y = random.randint(0, 400)
+        self.radius = 0
 
     def set_direction(self, direction):
         if direction == "left":
@@ -41,14 +42,14 @@ class Game_Object:
         self.x+= self.velocity*math.cos(rad)
         self.y+= self.velocity*math.sin(rad)
 
-        if self.x > MAX_WIDTH:
-            self.x = 0
-        elif self.x < 0:
-            self.x = MAX_WIDTH
+        if self.x > MAX_WIDTH + self.radius:
+            self.x = 0 - self.radius
+        elif self.x < 0 - self.radius:
+            self.x = MAX_WIDTH + self.radius
         
-        if self.y > MAX_HEIGHT:
-            self.y = 0
-        elif self.y < 0:
-            self.y = MAX_HEIGHT
+        if self.y > MAX_HEIGHT + self.radius:
+            self.y = 0 - self.radius
+        elif self.y < 0 - self.radius:
+            self.y = MAX_HEIGHT + self.radius
 
 

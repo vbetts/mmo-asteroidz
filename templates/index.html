@@ -57,20 +57,51 @@
 				}
 
 				draw_projectiles(data.projectiles, ctx);
+				draw_asteroids(data.asteroids, ctx);
 			}
 		
 		}
 
 		function draw_projectiles(projectiles, ctx){
 			for (var i = 0; i < projectiles.length; i++){
-				p = projectiles[i];
+				var p = projectiles[i];
+				//Convert to radians
+				var rot = p.rot*Math.PI/180;
+				
+				var x2 = p.x+3*Math.cos(rot);
+				var y2 = p.y+3*Math.sin(rot);
 				ctx.beginPath();
 				ctx.moveTo(p.x, p.y);
-				ctx.lineTo(p.x-3, p.y+3);
+				ctx.lineTo(x2, y2);
 				ctx.strokeStyle="#000000";
 				ctx.stroke();	
 			}	
 		
+		}
+
+		function draw_asteroids(asteroids, ctx){
+			for (var i = 0; i < asteroids.length; i++){
+				var a = asteroids[i];
+				var deg = a.spin;
+				ctx.beginPath();
+				var startx = null;
+				var starty = null;
+				for (var p = 0; p < a.points.length; p++){
+					deg += a.points[p];
+					x = a.x + a.radius*Math.cos(deg*Math.PI/180);
+					y = a.y + a.radius*Math.sin(deg*Math.PI/180);
+					if (p == 0){
+						startx = x;
+						starty = y;
+						ctx.moveTo(x, y);
+					} else {
+						ctx.lineTo(x, y);
+					}
+				}
+				ctx.lineTo(startx, starty);
+				ctx.strokeStyle = "#000000";
+				ctx.stroke();
+			}
 		}
 		
 		function draw_ship(ship_data, ctx, current_user){

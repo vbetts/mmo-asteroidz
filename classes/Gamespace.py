@@ -3,6 +3,7 @@ from . import Spaceship
 from . import Projectile
 from . import Asteroid
 import math
+import time
 
 class Gamespace:
     def __init__(self):
@@ -10,15 +11,19 @@ class Gamespace:
         self.projectiles = []
         self.asteroids = []
         self.players = {}
+        for x in range(0, 5):
+           self.new_asteroid()
+
 
     def update(self):
+        now = time.time()
+        self.projectiles = [p for p in self.projectiles if (now-p.spawn_time) <= 3]
         for ship in self.spaceships:
             self.spaceships[ship].move()
         for projectile in self.projectiles:
-            for missile in self.projectiles:
-                missile.move()
+            projectile.move()
         for asteroid in self.asteroids:
-            self.asteroids[asteroid].move()
+            asteroid.move()
 
     def new_player(self, sid):
         ship = Spaceship.Spaceship()
@@ -44,4 +49,4 @@ class Gamespace:
         self.projectiles.append(Projectile.Projectile(start_x, start_y, ship_rot, shipid))
 
     def new_asteroid(self):
-        self.asteroids[0] = Asteroid.Asteroid()
+        self.asteroids.append(Asteroid.Asteroid())
