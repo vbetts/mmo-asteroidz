@@ -8,8 +8,8 @@ app = Flask(__name__)
 app.debug = True
 socketio = SocketIO(app)
 
-players = {}
-ships = {}
+all_players = {}
+all_ships = {}
 
 @app.route('/')
 def index():
@@ -22,27 +22,40 @@ def join_event(joinmsg):
     user.shipid = ship.shipid
 
     #store arrays of ship and player objects in memory indexed by respective IDs
-    ships[ship.shipid]=ship
-    players[user.playerid]=user
+    all_ships[ship.shipid]=ship
+    all_players[user.playerid]=user
 
     #Python objects are not translatable to JSON
     #Build a JSON object containing ship data to return to the client
     players_json = build_json()
 
-    emit('joined', players_json)
+    emit('draw', players_json)
+
+
+@socketio.on('move_ship', namespace='/test')
+def move_event(direction):
+    player = all_players[request.sid]
+    ship = all_ships[player.shipid]
+    ship = ship.move(ship, direction)
+    
+    all_ships[player.shipid] = ship
+
+    ret = build_json()
+
+    emit('draw', ret)
 
 @socketio.on('disconnect', namespace='/test')
 def leave_event():
     #Remove players who have disconnected from the stored game data
-    player = players[request.sid]
-    del players[request.sid]
-    del ships[player.shipid]
+    player = all_players[request.sid]
+    del all_players[request.sid]
+    del all_ships[player.shipid]
 
 def build_json():
     #Python dictionaries are essentially the same format as JSON
     ret = {}
-    for player in players:
-        ship = ships[players[player].shipid]
+    for player in all_players:
+        ship = all_ships[all_players[player].shipid]
         #index the data by playerid
         ret[player] = {"shipid":ship.shipid, "colour":ship.colour, "x":ship.x, "y":ship.y, "v":ship.velocity}
     return ret

@@ -12,25 +12,59 @@
 				socket.emit('join', {data: 'I\'m connected!'} );
 			});
 
-			socket.on('joined', function(data){
-				console.log(data);
-				var sockid_prefix = socket.nsp + "#";
-				var identifier = socket["id"].replace("", sockid_prefix);
-				var canvas = document.getElementById('gamespace');
-				for (var user in data){
-					if (canvas.getContext) {
-						var ctx = canvas.getContext('2d');
-						ctx.beginPath();
-						ctx.moveTo(data[user].x, data[user].y);
-						ctx.lineTo(data[user].x+20, data[user].y+20);
-						ctx.lineTo(data[user].x, data[user].y+40);
-						ctx.fillStyle = "#"+data[user].colour;
-						ctx.fill();
-					}
+			socket.on('draw', function(data){
+				draw(data, socket);
+			});
+			
+			$(document).keydown(function(e){
+				/*
+				   Keycodes for arrow keys:
+				   	left: 37
+					up: 38
+					right: 39
+					down: 40
+
+				   Keycode for space: 32
+				*/
+
+				var ARROW_KEYS = {37 : "left", 38 : "up", 39 : "right", 40 : "down"};
+				var SPACE = 32;
+				if (ARROW_KEYS[e.keyCode]){
+					socket.emit("move_ship", ARROW_KEYS[e.keyCode]);
+				} else if (e.keyCode == SPACE){
+					socket.emit("fire");
 				}
 			});
 
+
+
 		});
+		function draw(data, socket){
+			var sockid_prefix = socket.nsp + "#";
+			var identifier = socket["id"].replace(sockid_prefix, "");
+			var canvas = document.getElementById('gamespace');
+			if (canvas.getContext) {
+				var ctx = canvas.getContext('2d');
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				for (var user in data){
+					ctx.beginPath();
+					ctx.moveTo(data[user].x, data[user].y);
+					ctx.lineTo(data[user].x+20, data[user].y+20);
+					ctx.lineTo(data[user].x, data[user].y+40);
+					ctx.lineTo(data[user].x, data[user].y);
+					ctx.fillStyle = "#"+data[user].colour;
+					ctx.strokeStyle = "#"+data[user].colour;
+					if (user == identifier){
+						ctx.stroke();
+					} else {
+						ctx.fill();
+					
+					}
+				}
+			}
+		
+		}
+		
 		</script>
 		<style>
 		#gamespace {
