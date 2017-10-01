@@ -78,7 +78,7 @@ def build_json():
     for player in all_players:
         ship = all_ships[all_players[player].shipid]
         #index the data by playerid
-        ret[player] = {'shipid':ship.shipid, 'colour':ship.colour, 'x':ship.x, 'y':ship.y, 'v':ship.velocity, 'rotation':ship.rotation}
+        ret[player] = {'shipid':ship.shipid, 'colour':ship.colour, 'x':ship.x, 'y':ship.y, 'rot':ship.rotation}
     return ret
 
 @socketio.on('disconnect', namespace='/test')

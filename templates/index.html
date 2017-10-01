@@ -41,24 +41,60 @@
 			var sockid_prefix = socket.nsp + "#";
 			var identifier = socket["id"].replace(sockid_prefix, "");
 			var canvas = document.getElementById('gamespace');
+
 			if (canvas.getContext) {
 				var ctx = canvas.getContext('2d');
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				for (var user in data){
-					ctx.beginPath();
-					ctx.moveTo(data[user].x, data[user].y);
-					ctx.lineTo(data[user].x+15, data[user].y+30);
-					ctx.lineTo(data[user].x-15, data[user].y+30);
-					ctx.lineTo(data[user].x, data[user].y);
-					ctx.fillStyle = "#"+data[user].colour;
-					ctx.strokeStyle = "#"+data[user].colour;
-					ctx.stroke();
 					if (user == identifier){
-						ctx.fill();
-					} 
+						current_user = true;
+					} else {
+						current_user = false;
+					}
+
+					draw_ship(data[user], ctx, current_user);
 				}
 			}
 		
+		}
+
+		function draw_ship(ship_data, ctx, current_user){
+			var spaceship_length = 15;
+			var x = ship_data.x;
+			var y = ship_data.y;
+			var rot = ship_data.rot;
+			//Convert to radians
+			rot = rot*Math.PI/180;
+			var offset = 120*Math.PI/180;
+			var x1 = x+spaceship_length*Math.cos(rot);
+			var y1 = y+spaceship_length*Math.sin(rot);
+		
+			var x2 = x+spaceship_length*Math.cos(rot+offset);
+			var y2 = y+spaceship_length*Math.sin(rot+offset);
+			
+			var x3 = x+spaceship_length*Math.cos(rot+offset*2);
+			var y3 = y+spaceship_length*Math.sin(rot+offset*2);
+			
+			ctx.beginPath();
+			ctx.moveTo(x1, y1);
+			ctx.lineTo(x2, y2);
+			ctx.lineTo(x3, y3);
+			ctx.lineTo(x1, y1);
+			ctx.fillStyle = "#"+ship_data.colour;
+			ctx.strokeStyle = "#"+ship_data.colour;
+			ctx.stroke();
+			if (current_user){
+				ctx.fill();
+			}
+
+			//Draw a line to indicate the front of the ship	
+			ctx.beginPath();
+			ctx.moveTo(x1, y1);
+			ctx.lineTo(x1+1, y1+1);
+			ctx.strokeStyle = "#000000";
+
+			ctx.stroke();
+	
 		}
 		
 		</script>

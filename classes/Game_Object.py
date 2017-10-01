@@ -1,35 +1,46 @@
-import random
+import random, math
 
-OPPOSITE_DIRECTION = {"left":"right", "right":"left", "up":"down", "down":"up"}
+#OPPOSITE_DIRECTION = {"left":"right", "right":"left", "up":"down", "down":"up"}
 MAX_HEIGHT = 600
 MAX_WIDTH = 700
+MAX_VELOCITY = 5
+MIN_VELOCITY = 0
+
 class Game_Object:
     def __init__(self):
         self.direction = ""
         self.velocity = 0
-        self.rotation = 0
+        self.rotation = random.randint(0, 359)
         self.x = random.randint(0, 600)
         self.y = random.randint(0, 400)
 
     def set_direction(self, direction):
-        if self.direction != "" and direction == OPPOSITE_DIRECTION[self.direction]:
-            self.velocity = 0
-        else:
-            self.velocity = 1
-            #the rotation here can be 90 or 270
+        if direction == "left":
+            self.rotation -= 20
+        elif direction == "right":
+            self.rotation += 20
+
+        if self.rotation >= 360:
+            #Wrap around if total rotation exceeds 360
+            self.rotation = self.rotation%360
+        elif self.rotation < 0:
+            #Wrap for negative values
+            self.rotation += 360
+        
+        #Increase/decrease velocity within set boundaries
+        if direction == "up" and self.velocity < MAX_VELOCITY:
+            self.velocity += 1
+        elif direction == "down" and self.velocity > MIN_VELOCITY:
+            self.velocity -= 1
 
         self.direction = direction
     
     #Moves the ship continuously once the user chooses a direction
     def move(self):
-        if self.direction == "left":
-            self.x = self.x-self.velocity
-        elif self.direction == "right":
-            self.x = self.x+self.velocity
-        elif self.direction == "up":
-            self.y = self.y-self.velocity
-        elif self.direction == "down":
-            self.y = self.y+self.velocity
+        rad = math.radians(self.rotation)
+
+        self.x+= self.velocity*math.cos(rad)
+        self.y+= self.velocity*math.sin(rad)
 
         if self.x > MAX_WIDTH:
             self.x = 0
