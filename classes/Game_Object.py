@@ -13,6 +13,7 @@ class Game_Object:
         self.x = random.randint(0, 600)
         self.y = random.randint(0, 400)
         self.radius = 0
+        self.alive = True
 
     def set_direction(self, direction):
         if direction == "left":

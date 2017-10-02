@@ -12,18 +12,40 @@ class Gamespace:
         self.asteroids = []
         self.players = {}
         for x in range(0, 5):
-           self.new_asteroid()
+           self.new_asteroid(Asteroid.Asteroid_Size.LARGE)
 
 
     def update(self):
         now = time.time()
         self.projectiles = [p for p in self.projectiles if (now-p.spawn_time) <= 3]
+        #Move all the things
         for ship in self.spaceships:
             self.spaceships[ship].move()
         for projectile in self.projectiles:
             projectile.move()
         for asteroid in self.asteroids:
             asteroid.move()
+        #Collide all the things
+        temp_asteroids = self.asteroids
+        for a in temp_asteroids:
+            for p in self.projectiles:
+                if self.intersect(a, p):
+                    p.alive = False
+                    self.break_asteroid(a)
+            for s in self.spaceships:
+                if self.intersect(a, self.spaceships[s]):
+                    self.kill(s)
+        self.projectiles = [p for p in self.projectiles if p.alive]
+        self.asteroids = [a for a in self.asteroids if a.alive]
+
+    def break_asteroid(self, asteroid):
+        asteroid.alive = False
+        if asteroid.size != Asteroid.Asteroid_Size.SMALL:
+            self.new_asteroid(asteroid.size-1, asteroid.x, asteroid.y)
+            self.new_asteroid(asteroid.size-1, asteroid.x, asteroid.y)
+
+    def kill(self, shipid):
+        pass
 
     def new_player(self, sid):
         ship = Spaceship.Spaceship()
@@ -48,5 +70,23 @@ class Gamespace:
 
         self.projectiles.append(Projectile.Projectile(start_x, start_y, ship_rot, shipid))
 
-    def new_asteroid(self):
-        self.asteroids.append(Asteroid.Asteroid())
+    def new_asteroid(self, size, x=None, y=None):
+        self.asteroids.append(Asteroid.Asteroid(size, x, y))
+
+    def intersect(self, a, b):
+        #first try an approximation of an intersection
+        if self.maybe_intersect(a, b) == False:
+            return False
+        else:
+            #if the approximation returns true, we need to check more precisely
+            #finding the intersection of two polygons is complicated, so i will come back to this
+            #and return True for now
+            return True
+
+    def maybe_intersect(self, a, b):
+        dx = (a.x-b.x)**2
+        dy = (a.y-b.y)**2
+
+        return (dx+dy) < (a.radius + b.radius)**2
+
+

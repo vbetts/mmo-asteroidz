@@ -91,7 +91,7 @@ def build_json():
     for player in game_data.players:
         ship = game_data.spaceships[game_data.players[player].shipid]
         #index the data by playerid
-        ret["players"][player] = {'shipid':ship.shipid, 'colour':ship.colour, 'x':ship.x, 'y':ship.y, 'rot':ship.rotation}
+        ret["players"][player] = {'shipid':ship.shipid, 'radius': ship.radius, 'colour':ship.colour, 'x':ship.x, 'y':ship.y, 'rot':ship.rotation}
     
     return ret
 
