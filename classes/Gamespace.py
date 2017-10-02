@@ -7,13 +7,25 @@ import time
 
 class Gamespace:
     def __init__(self):
+        self.players = {}
+        self.reset()
+
+    def reset(self):
         self.spaceships = {}
         self.projectiles = []
         self.asteroids = []
-        self.players = {}
         for x in range(0, 5):
            self.new_asteroid(Asteroid.Asteroid_Size.LARGE)
 
+        for p in self.players:
+            self.players[p].shipid = self.new_ship()
+
+
+    def gameover(self):
+        if len(self.asteroids) > 0 and len(self.spaceships) > 0:
+            return False
+        else:
+            return True
 
     def update(self):
         now = time.time()
@@ -34,25 +46,30 @@ class Gamespace:
                     self.break_asteroid(a)
             for s in self.spaceships:
                 if self.intersect(a, self.spaceships[s]):
-                    self.kill(s)
+                    self.spaceships[s].alive = False
+
         self.projectiles = [p for p in self.projectiles if p.alive]
         self.asteroids = [a for a in self.asteroids if a.alive]
-
+        self.spaceships = {shipid:ship for shipid, ship in self.spaceships.items() if ship.alive}
+        
     def break_asteroid(self, asteroid):
         asteroid.alive = False
         if asteroid.size != Asteroid.Asteroid_Size.SMALL:
             self.new_asteroid(asteroid.size-1, asteroid.x, asteroid.y)
             self.new_asteroid(asteroid.size-1, asteroid.x, asteroid.y)
 
-    def kill(self, shipid):
-        pass
-
     def new_player(self, sid):
+        shipid = self.new_ship()
+
+        user = Player.Player(sid)
+        user.shipid = shipid
+        self.players[user.playerid] = user
+
+    def new_ship(self):
         ship = Spaceship.Spaceship()
         self.spaceships[ship.shipid] = ship
-        user = Player.Player(sid)
-        user.shipid = ship.shipid
-        self.players[user.playerid] = user
+        return ship.shipid
+
 
     def new_projectile(self, player_id):
         SPACESHIP_LENGTH = 15

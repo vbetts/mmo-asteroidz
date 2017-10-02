@@ -12,9 +12,6 @@ socketio = SocketIO(app)
 thread = None
 thread_lock = Lock()
 
-all_players = {}
-all_ships = {}
-
 game_data = Gamespace()
 
 @app.route('/')
@@ -46,28 +43,27 @@ def join_event(joinmsg):
 def move_event(direction):
     global game_data
     player = game_data.players[request.sid]
-    ship = game_data.spaceships[player.shipid]
-
-    ship.set_direction(direction)
-    
-    ret = build_json()
-
-    emit('draw', ret)
-
+    if player.shipid in game_data.spaceships:
+        ship = game_data.spaceships[player.shipid]
+        ship.set_direction(direction)
 
 @socketio.on('fire', namespace='/test')
 def fire_missile():
     global game_data
-    missile = game_data.new_projectile(request.sid)
-    ret = build_json()
-    emit('draw', ret)
+    
+    player = game_data.players[request.sid]
+    if player.shipid in game_data.spaceships:
+        game_data.new_projectile(request.sid)
 
 #Re-draw the canvas 30x a second
 def update_game():
     global game_data
     while True:
         socketio.sleep(1.0/30.0)
-        game_data.update()
+        if game_data.gameover():
+            game_data.reset()
+        else :
+            game_data.update()
         ret = build_json()
         socketio.emit('draw', ret, namespace='/test')
 
@@ -89,9 +85,10 @@ def build_json():
         ret["asteroids"].append(asteroid_json)
 
     for player in game_data.players:
-        ship = game_data.spaceships[game_data.players[player].shipid]
-        #index the data by playerid
-        ret["players"][player] = {'shipid':ship.shipid, 'radius': ship.radius, 'colour':ship.colour, 'x':ship.x, 'y':ship.y, 'rot':ship.rotation}
+        if game_data.players[player].shipid in game_data.spaceships:
+            ship = game_data.spaceships[game_data.players[player].shipid]
+            #index the data by playerid
+            ret["players"][player] = {'shipid':ship.shipid, 'radius': ship.radius, 'colour':ship.colour, 'x':ship.x, 'y':ship.y, 'rot':ship.rotation}
     
     return ret
 
