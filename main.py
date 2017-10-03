@@ -42,18 +42,19 @@ def join_event(joinmsg):
 @socketio.on('move_ship', namespace='/test')
 def move_event(direction):
     global game_data
-    player = game_data.players[request.sid]
-    if player.shipid in game_data.spaceships:
-        ship = game_data.spaceships[player.shipid]
-        ship.set_direction(direction)
+    if request.sid in game_data.players:
+        player = game_data.players[request.sid]
+        if player.shipid in game_data.spaceships:
+            ship = game_data.spaceships[player.shipid]
+            ship.set_direction(direction)
 
 @socketio.on('fire', namespace='/test')
 def fire_missile():
     global game_data
-    
-    player = game_data.players[request.sid]
-    if player.shipid in game_data.spaceships:
-        game_data.new_projectile(request.sid)
+    if request.sid in game_data.players: 
+        player = game_data.players[request.sid]
+        if player.shipid in game_data.spaceships:
+            game_data.new_projectile(request.sid)
 
 #Re-draw the canvas 30x a second
 def update_game():
@@ -96,9 +97,11 @@ def build_json():
 def leave_event():
     global game_data
     #Remove players who have disconnected from the stored game data
-    player = game_data.players[request.sid]
-    del game_data.players[request.sid]
-    del game_data.spaceships[player.shipid]
+    if request.sid in game_data.players:
+        player = game_data.players[request.sid]
+        del game_data.players[request.sid]
+        if player.shipid in game_data.spaceships:
+            del game_data.spaceships[player.shipid]
 
 
 if __name__ == '__main__':
